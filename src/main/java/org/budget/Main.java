@@ -5,132 +5,27 @@ import java.util.*;
 
 class ExpenseManager {
 
-    int income = 0;
-    private float purchaseAmount = 0;
-
-    public Map<String, Float> getSortedPurchases(int sortOption, int sortCatId, String[] purchaseCategory) {
-        //purchaseCategory = {"Empty", "Food", "Clothes", "Entertainment", "Other", "All", "Back"};
-        // sortPurchaseCategory = {"Empty", "Food", "Entertainment",
-        //                "Clothes", "Other"}
-        Map<String, Float> resultRecords = new LinkedHashMap<>();
-
-        int[] categoryId = {1, 3, 2, 4};
-
-        if (sortOption == 1) {
-            itemList.stream().toList().forEach(item -> resultRecords.put(item.getItemName(), item.getItemPrice()));
-        } else if (sortOption == 2) {
-            int bumpIndex = 0;
-            for (var category : categoryId) {
-                ++bumpIndex;
-                float total = 0;
-                for (var item : itemList) {
-                    if (item.getCategoryId() == category) {
-                        total += item.getItemPrice();
-                    }
-                    // here purchaseCategory is sortPurchaseCategory - the
-                    // order of elements is changed
-                    resultRecords.put(purchaseCategory[bumpIndex], total);
-                }
-            }
-        } else {
-            // Sort by Type of purchase
-            itemList.stream().toList().forEach(item -> {
-                if (item.getCategoryId() == sortCatId) {
-                    resultRecords.put(item.getItemName(), item.getItemPrice());
-                }
-            });
-        }
-
-        return resultRecords;
-    }
-
-    static class OrderByItemPrice implements Comparator<Item> {
+    static class OrderByItemPrice implements Comparator<ItemDetails> {
         @Override
-        public int compare(Item item, Item t1) {
-            return Float.compare(t1.getItemPrice(), item.getItemPrice());
+        public int compare(ItemDetails itemDetails, ItemDetails t1) {
+            return Float.compare(t1.getItemPrice(), itemDetails.getItemPrice());
         }
     }
 
-    static class OrderByItemName implements Comparator<Item> {
+    static class OrderByItemName implements Comparator<ItemDetails> {
 
         @Override
-        public int compare(Item item, Item t1) {
-            return t1.getItemName().compareTo(item.getItemName());
+        public int compare(ItemDetails itemDetails, ItemDetails t1) {
+            return t1.getItemName().compareTo(itemDetails.getItemName());
         }
     }
 
-    Set<Item> itemList = new TreeSet<>(new OrderByItemPrice().thenComparing(new OrderByItemName()));
-
-    public void addIncome(int income) {
-        this.income = income;
-    }
-
-    public void addPurchase(Item item) {
-        itemList.add(item);
-        purchaseAmount += item.getItemPrice();
-    }
-
-    public Map<String, Float> getPurchases(int categoryId) {
-
-        Map<String, Float> resultRecords = new LinkedHashMap<>();
-
-        if (categoryId == 5) {
-            itemList.stream().toList().forEach(item -> resultRecords.put(item.getItemName(), item.getItemPrice()));
-        } else {
-            itemList.stream().toList().forEach(item -> {
-                if (item.getCategoryId() == categoryId) {
-                    resultRecords.put(item.getItemName(), item.getItemPrice());
-                }
-            });
-        }
-
-        return resultRecords;
-    }
-
-    public float getBalance() {
-        return income - purchaseAmount;
-    }
-
-    public boolean savePurchases(File fileName) {
-
-        try (PrintWriter printWriter = new PrintWriter(fileName)) {
-            for (Item item : itemList) {
-                printWriter.println(item.getCategoryId() + "__" + item.getItemName() + "__" + item.getItemPrice());
-            }
-            printWriter.println(0 + "__" + "Total" + "__" + String.format("%.2f", purchaseAmount));
-            printWriter.println(0 + "__" + "Income" + "__" + income);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-        return true;
-    }
-
-    public boolean loadPurchases(File fileName) {
-
-        try (Scanner scanner = new Scanner(fileName)) {
-            while (scanner.hasNext()) {
-//                System.out.println(scanner.nextLine());
-                String[] temp = scanner.nextLine().split("__");
-//                System.out.println(temp[0] + ": " + temp[1] + ": " + temp[2]);
-                if (Objects.equals(temp[1], "Income")) {
-                    income = (int) Float.parseFloat(temp[2]);
-                } else if (Objects.equals(temp[1], "Total")) {
-                    purchaseAmount = Float.parseFloat(temp[2]);
-
-                } else {
-                    itemList.add(new Item(Integer.parseInt(temp[0]), temp[1], Float.parseFloat(temp[2])));
-                }
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        return true;
-    }
 }
 
 public class Main {
     public static void main(java.lang.String[] args) {
+
+        BudgetManager budgetManager = new MyBudgetManager();
 
         String menu = """
                 Choose your action:
@@ -176,8 +71,7 @@ public class Main {
 
         String[] purchaseCategory = {"Empty", "Food", "Clothes", "Entertainment", "Other", "All", "Back"};
 
-        String[] sortPurchaseCategory = {"Empty", "Food", "Entertainment",
-                "Clothes", "Other", "Extra"};
+        String[] sortPurchaseCategory = {"Empty", "Food", "Entertainment", "Clothes", "Other", "Extra"};
 
         File fileName = new File("./purchases.txt");
 
@@ -193,7 +87,7 @@ public class Main {
                     //Add income
                     System.out.println();
                     System.out.println("Enter income: ");
-                    expenseManager.addIncome(scanner.nextInt());
+                    budgetManager.addIncome(scanner.nextInt());
                     System.out.println("Income was added!");
                     System.out.println();
                     System.out.println(menu);
@@ -219,7 +113,7 @@ public class Main {
                             Scanner itemPriceScan = new Scanner(System.in);
                             float itemPrice = itemPriceScan.nextFloat();
 
-                            expenseManager.addPurchase(new Item(addPurchaseType, itemName, itemPrice));
+                            budgetManager.addPurchase(new ItemDetails(addPurchaseType, itemName, itemPrice));
                             System.out.println("Purchase was added!");
 
                             System.out.println();
@@ -236,7 +130,7 @@ public class Main {
                     // Show list of purchases
                     System.out.println();
                     int categoryId = 5;
-                    Map<String, Float> result = expenseManager.getPurchases(categoryId);
+                    Map<String, Float> result = budgetManager.getPurchases(categoryId);
 
                     float total = 0;
 
@@ -253,7 +147,7 @@ public class Main {
                                 total = 0;
                                 System.out.println();
                                 System.out.println(purchaseCategory[categoryId] + ":");
-                                result = expenseManager.getPurchases(categoryId);
+                                result = budgetManager.getPurchases(categoryId);
                                 if (result.size() > 0) {
                                     for (var finalResult : result.entrySet()) {
                                         total += finalResult.getValue();
@@ -281,7 +175,7 @@ public class Main {
                 case 4 -> {
                     //Display balance
                     System.out.println();
-                    float balance = expenseManager.getBalance();
+                    float balance = budgetManager.getBalance();
                     balance = balance >= 0 ? balance : 0;
                     System.out.printf("Balance: $%.2f", balance);
                     System.out.println();
@@ -291,7 +185,7 @@ public class Main {
                 case 5 -> {
                     // Save all purchases to the fileName
                     System.out.println();
-                    boolean saveStatus = expenseManager.savePurchases(fileName);
+                    boolean saveStatus = budgetManager.savePurchases(fileName);
 //                    System.out.println("Item purchases saved: " + saveStatus);
                     if (saveStatus) System.out.println("Purchases were saved!");
                     System.out.println();
@@ -300,13 +194,13 @@ public class Main {
                 case 6 -> {
                     // Load all purchases from the fileName
                     System.out.println();
-                    boolean loadStatus = expenseManager.loadPurchases(fileName);
-                    if (loadStatus)
-                        System.out.println("Purchases were loaded!");
+                    boolean loadStatus = budgetManager.loadPurchases(fileName);
+                    if (loadStatus) System.out.println("Purchases were loaded!");
                     System.out.println();
                     System.out.println(menu);
                 }
                 case 7 -> {
+                    // Analyze sort options
                     System.out.println();
                     int sortOption = 1;
                     int sortCatId = 0;
@@ -326,7 +220,7 @@ public class Main {
                             System.out.println();
 
                             if (sortOption == 1) {
-                                result = expenseManager.getSortedPurchases(sortOption, sortCatId, purchaseCategory);
+                                result = budgetManager.getSortedPurchases(sortOption, sortCatId, purchaseCategory);
                                 if (result.size() > 0) {
                                     System.out.println(sortCategory[sortOption] + ":");
                                     displaySortResults(result);
@@ -334,8 +228,7 @@ public class Main {
                                     System.out.println("The purchase list is empty!");
                                 }
                             } else if (sortOption == 2) {
-                                result =
-                                        expenseManager.getSortedPurchases(sortOption, sortCatId, sortPurchaseCategory);
+                                result = budgetManager.getSortedPurchases(sortOption, sortCatId, sortPurchaseCategory);
                                 Map<String, Float> result1 = Map.of(sortPurchaseCategory[1], 0f, sortPurchaseCategory[2], 0f, sortPurchaseCategory[3], 0f, sortPurchaseCategory[4], 0f);
                                 System.out.println(sortCategory[sortOption] + ":");
                                 if (result.size() == 0) {
@@ -349,7 +242,7 @@ public class Main {
                                 Scanner sortCategoryId = new Scanner(System.in);
                                 sortCatId = sortCategoryId.nextInt();
                                 System.out.println();
-                                result = expenseManager.getSortedPurchases(sortOption, sortCatId, purchaseCategory);
+                                result = budgetManager.getSortedPurchases(sortOption, sortCatId, purchaseCategory);
                                 if (result.size() > 0) {
                                     System.out.println(purchaseCategory[sortCatId] + ":");
                                     displaySortResults(result);
@@ -379,8 +272,7 @@ public class Main {
         float total = 0;
         for (var finalResult : result.entrySet()) {
             total += finalResult.getValue();
-            System.out.printf("%s $%.2f", finalResult.getKey(),
-                    finalResult.getValue());
+            System.out.printf("%s $%.2f", finalResult.getKey(), finalResult.getValue());
             System.out.println();
         }
         System.out.printf("Total sum: $%.2f", total);
