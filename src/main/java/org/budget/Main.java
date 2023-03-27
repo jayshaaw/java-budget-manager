@@ -1,37 +1,7 @@
 package org.budget;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
-
-class Item {
-    private final int categoryId;
-    private final String itemName;
-    private final float itemPrice;
-
-    public Item(int categoryId, String itemName, float itemPrice) {
-        this.categoryId = categoryId;
-        this.itemName = itemName;
-        this.itemPrice = itemPrice;
-    }
-
-    public int getCategoryId() {
-        return categoryId;
-    }
-
-
-    public String getItemName() {
-        return itemName;
-    }
-
-    public float getItemPrice() {
-        return itemPrice;
-    }
-
-}
-
 
 class ExpenseManager {
 
@@ -43,7 +13,6 @@ class ExpenseManager {
         // sortPurchaseCategory = {"Empty", "Food", "Entertainment",
         //                "Clothes", "Other"}
         Map<String, Float> resultRecords = new LinkedHashMap<>();
-
 
         int[] categoryId = {1, 3, 2, 4};
 
@@ -118,7 +87,6 @@ class ExpenseManager {
         return resultRecords;
     }
 
-
     public float getBalance() {
         return income - purchaseAmount;
     }
@@ -163,7 +131,6 @@ class ExpenseManager {
 
 public class Main {
     public static void main(java.lang.String[] args) {
-
 
         String menu = """
                 Choose your action:
@@ -355,7 +322,7 @@ public class Main {
                         Scanner sortScanner = new Scanner(System.in);
                         sortOption = sortScanner.nextInt();
                         if (sortOption != 4) {
-//                            total = 0;
+                            total = 0;
                             System.out.println();
 
                             if (sortOption == 1) {
@@ -390,7 +357,6 @@ public class Main {
                                     System.out.println("The purchase list is empty!");
                                 }
                             }
-
                             System.out.println();
                             System.out.println(sortMenu);
                         } else {
@@ -404,14 +370,7 @@ public class Main {
                     loop = false;
                     System.out.println();
                     System.out.println("Bye!");
-//                    System.out.println();
                 }
-//                case 99 -> {
-//                    System.out.println();
-//                    System.out.println("Income: " + expenseManager.getIncome());
-//                    System.out.println();
-//                    System.out.println(menu);
-//                }
             }
         }
     }
@@ -429,13 +388,13 @@ public class Main {
     }
 
     private static void displaySortResultsByType(Map<String, Float> result) {
-//        float total = 0;
+        float total = 0;
         for (var finalResult : result.entrySet()) {
-//            total += finalResult.getValue();
+            total += finalResult.getValue();
             System.out.printf("%s - $%.2f", finalResult.getKey(), finalResult.getValue());
             System.out.println();
         }
-//        System.out.printf("Total sum: $%.2f", total);
         System.out.println();
     }
 }
+
