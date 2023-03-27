@@ -5,18 +5,18 @@ import java.util.*;
 
 class ExpenseManager {
 
-    static class OrderByItemPrice implements Comparator<Item> {
+    static class OrderByItemPrice implements Comparator<ItemDetails> {
         @Override
-        public int compare(Item item, Item t1) {
-            return Float.compare(t1.getItemPrice(), item.getItemPrice());
+        public int compare(ItemDetails itemDetails, ItemDetails t1) {
+            return Float.compare(t1.getItemPrice(), itemDetails.getItemPrice());
         }
     }
 
-    static class OrderByItemName implements Comparator<Item> {
+    static class OrderByItemName implements Comparator<ItemDetails> {
 
         @Override
-        public int compare(Item item, Item t1) {
-            return t1.getItemName().compareTo(item.getItemName());
+        public int compare(ItemDetails itemDetails, ItemDetails t1) {
+            return t1.getItemName().compareTo(itemDetails.getItemName());
         }
     }
 
@@ -113,7 +113,7 @@ public class Main {
                             Scanner itemPriceScan = new Scanner(System.in);
                             float itemPrice = itemPriceScan.nextFloat();
 
-                            budgetManager.addPurchase(new Item(addPurchaseType, itemName, itemPrice));
+                            budgetManager.addPurchase(new ItemDetails(addPurchaseType, itemName, itemPrice));
                             System.out.println("Purchase was added!");
 
                             System.out.println();

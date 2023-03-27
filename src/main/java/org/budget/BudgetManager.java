@@ -9,7 +9,7 @@ public interface BudgetManager {
 
     void addIncome(int income);
 
-    void addPurchase(Item item);
+    void addPurchase(ItemDetails itemDetails);
 
     Map<String, Float> getPurchases(int categoryId);
 

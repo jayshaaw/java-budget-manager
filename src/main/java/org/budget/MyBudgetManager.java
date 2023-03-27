@@ -11,7 +11,7 @@ public class MyBudgetManager implements BudgetManager {
     private int income = 0;
     private float purchaseAmount = 0;
 
-    Set<Item> itemList = new TreeSet<>(new ExpenseManager.OrderByItemPrice().thenComparing(new ExpenseManager.OrderByItemName()));
+    Set<ItemDetails> itemDetailsList = new TreeSet<>(new ExpenseManager.OrderByItemPrice().thenComparing(new ExpenseManager.OrderByItemName()));
 
     @Override
     public Map<String, Float> getSortedPurchases(int sortOption, int sortCatId, String[] purchaseCategory) {
@@ -23,13 +23,13 @@ public class MyBudgetManager implements BudgetManager {
         int[] categoryId = {1, 3, 2, 4};
 
         if (sortOption == 1) {
-            itemList.stream().toList().forEach(item -> resultRecords.put(item.getItemName(), item.getItemPrice()));
+            itemDetailsList.stream().toList().forEach(itemDetails -> resultRecords.put(itemDetails.getItemName(), itemDetails.getItemPrice()));
         } else if (sortOption == 2) {
             int bumpIndex = 0;
             for (var category : categoryId) {
                 ++bumpIndex;
                 float total = 0;
-                for (var item : itemList) {
+                for (var item : itemDetailsList) {
                     if (item.getCategoryId() == category) {
                         total += item.getItemPrice();
                     }
@@ -40,9 +40,9 @@ public class MyBudgetManager implements BudgetManager {
             }
         } else {
             // Sort by Type of purchase
-            itemList.stream().toList().forEach(item -> {
-                if (item.getCategoryId() == sortCatId) {
-                    resultRecords.put(item.getItemName(), item.getItemPrice());
+            itemDetailsList.stream().toList().forEach(itemDetails -> {
+                if (itemDetails.getCategoryId() == sortCatId) {
+                    resultRecords.put(itemDetails.getItemName(), itemDetails.getItemPrice());
                 }
             });
         }
@@ -56,9 +56,9 @@ public class MyBudgetManager implements BudgetManager {
     }
 
     @Override
-    public void addPurchase(Item item) {
-        itemList.add(item);
-        purchaseAmount += item.getItemPrice();
+    public void addPurchase(ItemDetails itemDetails) {
+        itemDetailsList.add(itemDetails);
+        purchaseAmount += itemDetails.getItemPrice();
     }
 
     @Override
@@ -66,11 +66,11 @@ public class MyBudgetManager implements BudgetManager {
         Map<String, Float> resultRecords = new LinkedHashMap<>();
 
         if (categoryId == 5) {
-            itemList.stream().toList().forEach(item -> resultRecords.put(item.getItemName(), item.getItemPrice()));
+            itemDetailsList.stream().toList().forEach(itemDetails -> resultRecords.put(itemDetails.getItemName(), itemDetails.getItemPrice()));
         } else {
-            itemList.stream().toList().forEach(item -> {
-                if (item.getCategoryId() == categoryId) {
-                    resultRecords.put(item.getItemName(), item.getItemPrice());
+            itemDetailsList.stream().toList().forEach(itemDetails -> {
+                if (itemDetails.getCategoryId() == categoryId) {
+                    resultRecords.put(itemDetails.getItemName(), itemDetails.getItemPrice());
                 }
             });
         }
@@ -86,8 +86,8 @@ public class MyBudgetManager implements BudgetManager {
     @Override
     public boolean savePurchases(File fileName) {
         try (PrintWriter printWriter = new PrintWriter(fileName)) {
-            for (Item item : itemList) {
-                printWriter.println(item.getCategoryId() + "__" + item.getItemName() + "__" + item.getItemPrice());
+            for (ItemDetails itemDetails : itemDetailsList) {
+                printWriter.println(itemDetails.getCategoryId() + "__" + itemDetails.getItemName() + "__" + itemDetails.getItemPrice());
             }
             printWriter.println(0 + "__" + "Total" + "__" + String.format("%.2f", purchaseAmount));
             printWriter.println(0 + "__" + "Income" + "__" + income);
@@ -111,7 +111,7 @@ public class MyBudgetManager implements BudgetManager {
                     purchaseAmount = Float.parseFloat(temp[2]);
 
                 } else {
-                    itemList.add(new Item(Integer.parseInt(temp[0]), temp[1], Float.parseFloat(temp[2])));
+                    itemDetailsList.add(new ItemDetails(Integer.parseInt(temp[0]), temp[1], Float.parseFloat(temp[2])));
                 }
             }
         } catch (FileNotFoundException e) {
